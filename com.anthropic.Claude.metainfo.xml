@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.anthropic.Claude</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>LicenseRef-proprietary</project_license>
+  <name>Claude</name>
+  <summary>Desktop application for Claude.ai</summary>
+  <description>
+    <p>
+      Talk with Claude, an AI assistant built by Anthropic. Claude can assist you with writing, analysis, coding, math, research, and creative projects.
+    </p>
+    <p>Features include:</p>
+    <ul>
+      <li>Direct access to Claude 3.7 Sonnet and Claude 3.5 models</li>
+      <li>Projects, Artifacts, and code execution capabilities</li>
+      <li>Extensible Model Context Protocol (MCP) server support</li>
+      <li>Integrated Claude Code and local sandbox environments</li>
+    </ul>
+  </description>
+  <launchable type="desktop-id">com.anthropic.Claude.desktop</launchable>
+  <url type="homepage">https://claude.ai</url>
+  <url type="help">https://support.anthropic.com</url>
+  <developer_name>Anthropic PBC</developer_name>
+  <content_rating type="oars-1.1" />
+  <provides>
+    <binary>claude</binary>
+  </provides>
+  <releases>
+    <release version="4.4212.0" date="2026-10-30">
+      <description>
+        <p>Anthropic Claude Desktop Linux release 4.4212.0.</p>
+      </description>
+    </release>
+    <release version="4.29.0" date="2026-10-27">
+      <description>
+        <p>Anthropic Claude Desktop Linux release.</p>
+      </description>
+    </release>
+  </releases>
+</component>

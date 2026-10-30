@@ -1,0 +1,8 @@
+[Flatpak Repo]
+Title=Claude Flatpak Repository
+Url=https://jhuang6451.github.io/flatpak-claude-desktop/repo
+Homepage=https://github.com/jhuang6451/flatpak-claude-desktop
+Comment=Anthropic Claude Desktop Client Flatpak repository
+Description=Production-grade Flatpak packaging of Claude Desktop Linux client with automated updates and Wayland support.
+Icon=https://jhuang6451.github.io/flatpak-claude-desktop/icons/com.anthropic.Claude.png
+gpg-verify=false

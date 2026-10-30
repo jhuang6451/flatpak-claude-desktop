@@ -1,0 +1,10 @@
+[Flatpak Ref]
+Name=com.anthropic.Claude
+Branch=stable
+Title=Claude
+Comment=Desktop application for Claude.ai
+Icon=https://jhuang6451.github.io/flatpak-claude-desktop/icons/com.anthropic.Claude.png
+Url=https://jhuang6451.github.io/flatpak-claude-desktop/repo
+IsRuntime=false
+SuggestRemoteName=claude
+gpg-verify=false

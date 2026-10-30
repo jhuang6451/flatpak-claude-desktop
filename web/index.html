@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claude Flatpak - Anthropic Claude Linux 客户端一键安装与自动更新</title>
+  <meta name="description" content="Anthropic Claude Linux 官方桌面客户端生产级 Flatpak 打包，集成 MCP 服务调用、Wayland 原生支持、全自动增量更新。">
+  <link rel="icon" type="image/png" href="icons/com.anthropic.Claude.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="bg-glow"></div>
+  <header class="header">
+    <div class="container nav-content">
+      <div class="logo-group">
+        <img src="icons/com.anthropic.Claude.png" alt="Claude Logo" class="app-icon">
+        <span class="app-title">Claude Desktop Flatpak</span>
+      </div>
+      <div class="nav-links">
+        <a href="https://github.com/jhuang6451/flatpak-claude-desktop" target="_blank" rel="noopener" class="nav-btn">
+          <svg height="20" width="20" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub 仓库
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main-content">
+    <section class="hero">
+      <div class="badge">
+        <span class="badge-dot"></span>
+        生产级 Flatpak 仓库 · 实时自动同步 Anthropic 官方发布
+      </div>
+      <h1 class="hero-title">
+        Anthropic <span class="gradient-text">Claude Desktop</span>
+      </h1>
+      <p class="hero-subtitle">
+        官方 Claude AI Linux 桌面客户端。内置 Model Context Protocol (MCP) 与本地隔离沙箱支持，优化 Wayland 缩放与密钥环集成，开箱即用。
+      </p>
+
+      <div class="actions">
+        <a href="claude.flatpakref" class="btn btn-primary" download>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          一键安装 (.flatpakref)
+        </a>
+        <a href="#cli-install" class="btn btn-secondary">
+          终端命令安装
+        </a>
+        <a href="https://github.com/jhuang6451/flatpak-claude-desktop/releases/latest" target="_blank" rel="noopener" class="btn btn-outline">
+          离线 Bundle 下载
+        </a>
+      </div>
+    </section>
+
+    <section id="cli-install" class="install-section">
+      <h2 class="section-title">终端快速安装（推荐）</h2>
+      <p class="section-desc">添加此 Flatpak 软件源后，即可享受系统原生的软件包管理与后台自动增量升级：</p>
+
+      <div class="code-box">
+        <div class="code-header">
+          <span class="code-lang">BASH</span>
+          <button class="copy-btn" onclick="copyInstallCmd()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            复制代码
+          </button>
+        </div>
+        <pre><code id="cmd-text"># 1. 添加 Claude 软件源仓库
+flatpak remote-add --if-not-exists claude https://jhuang6451.github.io/flatpak-claude-desktop/claude.flatpakrepo
+
+# 2. 安装 Claude Desktop
+flatpak install -y claude com.anthropic.Claude
+
+# 3. 运行应用
+flatpak run com.anthropic.Claude</code></pre>
+      </div>
+    </section>
+
+    <section class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3 class="feature-title">官方 APT 镜像同源直出</h3>
+        <p class="feature-desc">直接追踪 Anthropic 官方 Debian/Ubuntu 软件源构建，自动化 CI 校验 SHA-256 完整性，免除第三方篡改风险。</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🔌</div>
+        <h3 class="feature-title">Model Context Protocol (MCP)</h3>
+        <p class="feature-desc">完整支持配置外部 MCP Server。配合 Flatpak host 穿透机制，随时连接本地命令行工具与开发服务。</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🖥️</div>
+        <h3 class="feature-title">Wayland 原生支持</h3>
+        <p class="feature-desc">深度集成 Electron Ozone Wayland 平台通道，高分辨率与分数缩放（HiDPI）清晰锐利，无模糊发虚困扰。</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🔐</div>
+        <h3 class="feature-title">凭据密钥环集成</h3>
+        <p class="feature-desc">安全桥接 GNOME Keyring 与 KDE KWallet，保障 Anthropic 登录状态与 Session Token 长期持久化。</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">📦</div>
+        <h3 class="feature-title">跨发行版兼容</h3>
+        <p class="feature-desc">完美运行于 Fedora Silverblue/Atomic、Ubuntu、Arch Linux、Debian、openSUSE 及 SteamOS 等全系 Linux 系统。</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🔄</div>
+        <h3 class="feature-title">自动化增量升级</h3>
+        <p class="feature-desc">基于 OSTree 内容寻址存储，上游发版时仅需下载变动数据块，快速平滑完成无感更新。</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>Claude Desktop 是 Anthropic PBC 的专有软件与商标。本项目为独立的第三方社区开源 Flatpak 打包维护工程。</p>
+      <p style="margin-top: 8px;">基于 GitHub Actions & GitHub Pages 全自动化构建与托管 · <a href="https://github.com/jhuang6451/flatpak-claude-desktop">查看项目源码</a></p>
+    </div>
+  </footer>
+
+  <script>
+    function copyInstallCmd() {
+      const text = document.getElementById('cmd-text').innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        btn.innerHTML = '已复制！';
+        setTimeout(() => {
+          btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> 复制代码';
+        }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>

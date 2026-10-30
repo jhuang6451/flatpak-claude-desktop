@@ -1,0 +1,203 @@
+name: Build Flatpak & Deploy Repository
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'com.anthropic.Claude.yaml'
+      - 'claude.sh'
+      - 'com.anthropic.Claude.desktop'
+      - 'com.anthropic.Claude.metainfo.xml'
+      - 'scripts/**'
+      - 'icons/**'
+      - '.github/workflows/build-and-deploy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    name: Build Flatpak & Export Repository
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:freedesktop-25.08
+      options: --privileged
+    outputs:
+      app_version: ${{ steps.get_version.outputs.app_version }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract Application Version
+        id: get_version
+        run: |
+          VERSION=$(grep -oP 'claude-desktop_\K[0-9.]+(?=_amd64)' com.anthropic.Claude.yaml | head -n 1)
+          if [ -z "$VERSION" ]; then
+            VERSION="4.4212.0"
+          fi
+          echo "app_version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Building Claude Desktop version: ${VERSION}"
+
+      - name: Install Runtime Dependencies
+        run: |
+          flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+          flatpak install -y --noninteractive flathub \
+            org.freedesktop.Platform//25.08 \
+            org.freedesktop.Sdk//25.08 \
+            org.electronjs.Electron2.BaseApp//25.08 || true
+
+      - name: Cache Flatpak Builder State
+        uses: actions/cache@v4
+        with:
+          path: |
+            .flatpak-builder
+          key: flatpak-builder-${{ runner.os }}-${{ hashFiles('com.anthropic.Claude.yaml') }}
+          restore-keys: |
+            flatpak-builder-${{ runner.os }}-
+
+      - name: Build Flatpak Package & OSTree Repo
+        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          manifest-path: com.anthropic.Claude.yaml
+          bundle: com.anthropic.Claude.flatpak
+          build-bundle: true
+          branch: stable
+          repo-dir: repo
+          cache: true
+          arch: x86_64
+
+      - name: Generate OSTree Static Deltas & Prune
+        run: |
+          flatpak build-update-repo --generate-static-deltas --prune repo
+          tar -czf ostree-repo.tar.gz -C repo .
+
+      - name: Upload Standalone Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: claude-bundle
+          path: com.anthropic.Claude.flatpak
+          if-no-files-found: error
+
+      - name: Upload OSTree Repository Archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: ostree-repo-archive
+          path: ostree-repo.tar.gz
+          if-no-files-found: error
+
+  deploy:
+    name: Deploy to GitHub Pages & Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    env:
+      APP_VERSION: ${{ needs.build.outputs.app_version }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download Standalone Bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: claude-bundle
+
+      - name: Download OSTree Repository Archive
+        uses: actions/download-artifact@v4
+        with:
+          name: ostree-repo-archive
+
+      - name: Create or Update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "v${{ env.APP_VERSION }}"
+          name: "Claude Desktop v${{ env.APP_VERSION }}"
+          draft: false
+          prerelease: false
+          files: |
+            com.anthropic.Claude.flatpak
+            ostree-repo.tar.gz
+            claude.flatpakref
+            claude.flatpakrepo
+          body: |
+            ## Claude Desktop v${{ env.APP_VERSION }}
+
+            Official Anthropic Claude AI Linux Desktop client packaged as a production-grade Flatpak.
+
+            ### 🚀 安装方式 (Installation)
+
+            #### 方式 1：离线单文件 Bundle 安装（推荐，开箱即用）
+            下载 Release 附件中的 `com.anthropic.Claude.flatpak`，随后在终端执行：
+            ```bash
+            flatpak install --user com.anthropic.Claude.flatpak
+            ```
+
+            #### 方式 2：使用 `.flatpakref` 单文件图形化安装
+            下载本 Release 中的 `claude.flatpakref`，双击或运行：
+            ```bash
+            flatpak install claude.flatpakref
+            ```
+
+            #### 方式 3：添加软件源一键安装（支持后台全自动增量升级）
+            ```bash
+            # 1. 添加软件源
+            flatpak remote-add --if-not-exists claude https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/claude.flatpakrepo
+
+            # 2. 安装 Claude Desktop
+            flatpak install -y claude com.anthropic.Claude
+
+            # 3. 运行应用
+            flatpak run com.anthropic.Claude
+            ```
+
+            ---
+            *自动化构建与发布由 GitHub Actions 驱动。*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Prepare Deployment Directories
+        run: |
+          # 1. 准备轻量级 Web 静态站点目录 (推送至 gh-pages 分支，避开 Git 100MB 单文件限制)
+          mkdir -p web-deploy/icons web-deploy/repo
+          cp -a web/* web-deploy/
+          cp -a icons/hicolor/512x512/apps/com.anthropic.Claude.png web-deploy/icons/com.anthropic.Claude.png
+          cp -a icons/hicolor/512x512/apps/com.anthropic.Claude.png web-deploy/icons/512x512.png
+          cp claude.flatpakrepo web-deploy/claude.flatpakrepo
+          cp claude.flatpakrepo web-deploy/repo/claude.flatpakrepo
+          cp claude.flatpakref web-deploy/claude.flatpakref
+          cp claude.flatpakref web-deploy/repo/claude.flatpakref
+          touch web-deploy/.nojekyll
+
+          # 2. 准备包含完整 OSTree 仓库的部署目录 (供 GitHub Actions Pages API 使用，无 Git 100MB 限制)
+          mkdir -p deploy/repo deploy/icons
+          tar -xzf ostree-repo.tar.gz -C deploy/repo/
+          cp -a web-deploy/* deploy/
+          touch deploy/.nojekyll
+
+      - name: Deploy Web Assets to GitHub Pages Branch (gh-pages)
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./web-deploy
+          publish_branch: gh-pages
+          force_orphan: false
+          commit_message: "deploy: publish Web landing site for Claude Desktop v${{ env.APP_VERSION }}"
+
+      - name: Upload Pages Artifact (Including Full OSTree Repository)
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./deploy
+
+      - name: Deploy to GitHub Pages (Actions Environment)
+        id: deployment
+        continue-on-error: true
+        uses: actions/deploy-pages@v4

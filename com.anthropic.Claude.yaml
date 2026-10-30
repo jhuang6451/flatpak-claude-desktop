@@ -1,0 +1,125 @@
+app-id: com.anthropic.Claude
+runtime: org.freedesktop.Platform
+runtime-version: '25.08'
+sdk: org.freedesktop.Sdk
+base: org.electronjs.Electron2.BaseApp
+base-version: '25.08'
+command: claude
+tags:
+  - proprietary
+separate-locales: false
+
+cleanup:
+  - /include
+  - /lib/pkgconfig
+  - /share/gtk-doc
+  - '*.la'
+
+finish-args:
+  # Display & Windowing
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --share=ipc
+  # Networking
+  - --share=network
+  # Audio & Media
+  - --socket=pulseaudio
+  - --filesystem=xdg-run/pipewire-0
+  # Hardware & Acceleration (including KVM for Cowork local VM)
+  - --device=dri
+  - --device=kvm
+  # Filesystem permissions
+  - --filesystem=xdg-download
+  - --filesystem=xdg-documents
+  - --filesystem=home
+  # Desktop Integration & Secret Services (Keyring / KWallet)
+  - --talk-name=org.freedesktop.Notifications
+  - --talk-name=org.kde.StatusNotifierWatcher
+  - --talk-name=org.freedesktop.secrets
+  - --talk-name=org.kde.kwalletd5
+  - --talk-name=org.kde.kwalletd6
+  - --talk-name=org.freedesktop.Flatpak
+  - --talk-name=com.canonical.AppMenu.Registrar
+  - --talk-name=com.canonical.AppMenu.Registrar.*
+  # Environment
+  - --env=OZONE_PLATFORM=wayland
+  - --env=ELECTRON_TRASH=gio
+
+modules:
+  - name: claude
+    buildsystem: simple
+    build-options:
+      no-debuginfo: true
+      strip: false
+    build-commands:
+      # 1. 解包 Debian 软件包数据
+      - |
+        if [ -f "claude.deb" ]; then
+          bsdtar -xf claude.deb
+        fi
+        if [ -f "data.tar.xz" ]; then
+          tar -xf data.tar.xz
+        fi
+
+      # 2. 部署主程序本体
+      - mkdir -p /app/lib /app/bin
+      - cp -a usr/lib/claude-desktop /app/lib/
+
+      # 3. 确保主程序及组件具备执行权限
+      - chmod +x /app/lib/claude-desktop/claude-desktop
+      - chmod +x /app/lib/claude-desktop/chrome-sandbox
+      - chmod +x /app/lib/claude-desktop/chrome_crashpad_handler
+      - chmod +x /app/lib/claude-desktop/resources/cowork-linux-helper || true
+      - chmod +x /app/lib/claude-desktop/resources/virtiofsd || true
+      - chmod +x /app/lib/claude-desktop/resources/claude-ssh-askpass || true
+
+      # 4. 安装启动脚本
+      - install -Dm755 claude.sh /app/bin/claude
+
+      # 5. 安装桌面快捷方式与 AppStream 元数据
+      - install -Dm644 com.anthropic.Claude.desktop /app/share/applications/com.anthropic.Claude.desktop
+      - install -Dm644 com.anthropic.Claude.metainfo.xml /app/share/metainfo/com.anthropic.Claude.metainfo.xml
+
+      # 6. 安装标准 Hicolor 多尺寸图标
+      - |
+        for size in 16 32 48 128 256 512; do
+          if [ -f "icons/hicolor/${size}x${size}/apps/com.anthropic.Claude.png" ]; then
+            install -Dm644 "icons/hicolor/${size}x${size}/apps/com.anthropic.Claude.png" \
+              "/app/share/icons/hicolor/${size}x${size}/apps/com.anthropic.Claude.png"
+          fi
+        done
+
+      # 7. 安装 MIME 关联类型
+      - |
+        if [ -f "/app/lib/claude-desktop/resources/linux-mime/com.anthropic.Claude.xml" ]; then
+          install -Dm644 /app/lib/claude-desktop/resources/linux-mime/com.anthropic.Claude.xml \
+            /app/share/mime/packages/com.anthropic.Claude.xml
+        fi
+
+    sources:
+      - type: file
+        url: https://downloads.claude.ai/claude-desktop/apt/stable/pool/main/c/claude-desktop/claude-desktop_4.4212.0_amd64.deb
+        sha256: 4fcf658e0fc895390ab82593287281dfbce261b0ec3ea90060e82d8bfbfd7a84
+        dest-filename: claude.deb
+        only-arches:
+          - x86_64
+
+      - type: file
+        url: https://downloads.claude.ai/claude-desktop/apt/stable/pool/main/c/claude-desktop/claude-desktop_4.4212.0_arm64.deb
+        sha256: 7022dc56de30e0beb7fa0a7dc84e09aa00d7f9d4e1b7f93043b32baf75a2f6d8
+        dest-filename: claude.deb
+        only-arches:
+          - aarch64
+
+      - type: file
+        path: claude.sh
+
+      - type: file
+        path: com.anthropic.Claude.desktop
+
+      - type: file
+        path: com.anthropic.Claude.metainfo.xml
+
+      - type: dir
+        path: icons
+        dest: icons

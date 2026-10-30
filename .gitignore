@@ -1,0 +1,6 @@
+.flatpak-builder/
+build-dir/
+repo/
+*.flatpak
+*.deb
+.DS_Store
