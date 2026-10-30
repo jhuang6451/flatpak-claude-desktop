@@ -37,7 +37,8 @@ jobs:
         run: |
           VERSION=$(grep -oP 'claude-desktop_\K[0-9.]+(?=_amd64)' com.anthropic.Claude.yaml | head -n 1)
           if [ -z "$VERSION" ]; then
-            VERSION="4.4212.0"
+            echo "::error::Failed to extract version from com.anthropic.Claude.yaml"
+            exit 1
           fi
           echo "app_version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "Building Claude Desktop version: ${VERSION}"
@@ -164,33 +165,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Prepare Deployment Directories
+      - name: Prepare Deployment Directory
         run: |
-          # 1. 准备轻量级 Web 静态站点目录 (推送至 gh-pages 分支，避开 Git 100MB 单文件限制)
-          mkdir -p web-deploy/icons web-deploy/repo
-          cp -a web/* web-deploy/
-          cp -a icons/hicolor/512x512/apps/com.anthropic.Claude.png web-deploy/icons/com.anthropic.Claude.png
-          cp -a icons/hicolor/512x512/apps/com.anthropic.Claude.png web-deploy/icons/512x512.png
-          cp claude.flatpakrepo web-deploy/claude.flatpakrepo
-          cp claude.flatpakrepo web-deploy/repo/claude.flatpakrepo
-          cp claude.flatpakref web-deploy/claude.flatpakref
-          cp claude.flatpakref web-deploy/repo/claude.flatpakref
-          touch web-deploy/.nojekyll
-
-          # 2. 准备包含完整 OSTree 仓库的部署目录 (供 GitHub Actions Pages API 使用，无 Git 100MB 限制)
+          # 包含 Web 站点与完整 OSTree 仓库，通过 Actions Pages API 部署 (无 Git 100MB 限制)
           mkdir -p deploy/repo deploy/icons
           tar -xzf ostree-repo.tar.gz -C deploy/repo/
-          cp -a web-deploy/* deploy/
+          cp -a web/* deploy/
+          cp -a icons/hicolor/512x512/apps/com.anthropic.Claude.png deploy/icons/com.anthropic.Claude.png
+          cp -a icons/hicolor/512x512/apps/com.anthropic.Claude.png deploy/icons/512x512.png
+          cp claude.flatpakrepo claude.flatpakref deploy/
+          cp claude.flatpakrepo claude.flatpakref deploy/repo/
           touch deploy/.nojekyll
-
-      - name: Deploy Web Assets to GitHub Pages Branch (gh-pages)
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./web-deploy
-          publish_branch: gh-pages
-          force_orphan: false
-          commit_message: "deploy: publish Web landing site for Claude Desktop v${{ env.APP_VERSION }}"
 
       - name: Upload Pages Artifact (Including Full OSTree Repository)
         uses: actions/upload-pages-artifact@v3
@@ -199,5 +184,4 @@ jobs:
 
       - name: Deploy to GitHub Pages (Actions Environment)
         id: deployment
-        continue-on-error: true
         uses: actions/deploy-pages@v4

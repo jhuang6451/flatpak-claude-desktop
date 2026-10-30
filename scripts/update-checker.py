@@ -154,6 +154,10 @@ def main():
         print("Error: Could not retrieve complete package metadata.")
         sys.exit(1)
 
+    if arm64_pkg.get("Version") != ver:
+        print(f"Error: amd64 ({ver}) and arm64 ({arm64_pkg.get('Version')}) versions differ; skipping update.")
+        sys.exit(1)
+
     curr = parse_current_manifest()
     print(f"Current manifest version: {curr['version']}")
 

@@ -7,4 +7,5 @@ Icon=https://jhuang6451.github.io/flatpak-claude-desktop/icons/com.anthropic.Cla
 Url=https://jhuang6451.github.io/flatpak-claude-desktop/repo
 IsRuntime=false
 SuggestRemoteName=claude
+RuntimeRepo=https://dl.flathub.org/repo/flathub.flatpakrepo
 gpg-verify=false
