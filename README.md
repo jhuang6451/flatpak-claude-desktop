@@ -1,79 +1,102 @@
-# Claude Desktop Flatpak
-
 <div align="center">
-  <img src="icons/hicolor/128x128/apps/com.anthropic.Claude.png" alt="Claude Logo" width="96" height="96" />
-  <h3>Anthropic Claude Linux 桌面客户端 — 生产级 Flatpak 打包与全自动更新项目</h3>
+  <img src="icons/hicolor/128x128/apps/com.anthropic.Claude.png" alt="Claude" width="88" height="88" />
+
+  <h1>Claude Desktop for Linux (Flatpak)</h1>
+
+  <p>Anthropic 官方 Linux 桌面客户端的 Flatpak 打包与软件源。</p>
+
   <p>
-    <a href="https://github.com/jhuang6451/flatpak-claude-desktop/actions/workflows/build-and-deploy.yml"><img src="https://img.shields.io/github/actions/workflow/status/jhuang6451/flatpak-claude-desktop/build-and-deploy.yml?branch=master&label=Build%20%26%20Deploy&logo=github-actions&logoColor=white" alt="Build Status" /></a>
-    <a href="https://github.com/jhuang6451/flatpak-claude-desktop/actions/workflows/check-update.yml"><img src="https://img.shields.io/github/actions/workflow/status/jhuang6451/flatpak-claude-desktop/check-update.yml?branch=master&label=Auto%20Updater&logo=anthropic&logoColor=white" alt="Update Checker" /></a>
-    <a href="https://github.com/jhuang6451/flatpak-claude-desktop/releases/latest"><img src="https://img.shields.io/github/v/release/jhuang6451/flatpak-claude-desktop?label=Latest%20Release&color=d97757" alt="Latest Version" /></a>
-    <img src="https://img.shields.io/badge/Flatpak-v25.08-blue?logo=flatpak&logoColor=white" alt="Flatpak Runtime" />
-    <img src="https://img.shields.io/badge/Architecture-x86__64%20%7C%20aarch64-brightgreen" alt="Architecture" />
-    <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green" alt="License" /></a>
+    <a href="https://github.com/jhuang6451/flatpak-claude-desktop/actions/workflows/build-and-deploy.yml"><img src="https://img.shields.io/github/actions/workflow/status/jhuang6451/flatpak-claude-desktop/build-and-deploy.yml?branch=master&label=build&labelColor=141413&color=d97757" alt="构建状态" /></a>
+    <a href="https://github.com/jhuang6451/flatpak-claude-desktop/actions/workflows/check-update.yml"><img src="https://img.shields.io/github/actions/workflow/status/jhuang6451/flatpak-claude-desktop/check-update.yml?branch=master&label=upstream%20check&labelColor=141413&color=d97757" alt="上游检查状态" /></a>
+    <a href="https://github.com/jhuang6451/flatpak-claude-desktop/releases/latest"><img src="https://img.shields.io/github/v/release/jhuang6451/flatpak-claude-desktop?label=release&labelColor=141413&color=d97757" alt="最新版本" /></a>
+    <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-d97757?labelColor=141413" alt="许可证" /></a>
   </p>
+
   <p>
-    <b><a href="https://jhuang6451.github.io/flatpak-claude-desktop/">🌐 在线仓库主页与一键安装</a></b>
+    <a href="https://jhuang6451.github.io/flatpak-claude-desktop/">项目主页</a> ·
+    <a href="https://github.com/jhuang6451/flatpak-claude-desktop/releases/latest">下载离线包</a> ·
+    <a href="#已知限制">已知限制</a>
   </p>
 </div>
 
----
+## 简介
 
-## 📖 项目简介 (Overview)
+Anthropic 只为 Linux 提供 `.deb` 软件包。本项目把这个官方安装包重新打成 Flatpak,并托管一个 OSTree 软件源,这样 Fedora Atomic、Bazzite、SteamOS 这类不方便装 `.deb` 的系统也能用 `flatpak install` 安装和更新。
 
-本仓库提供 Anthropic 官方 Linux 桌面客户端 **Claude Desktop** 的生产级 Flatpak 打包方案。
+打包时不修改上游程序。构建流程从 Anthropic 的 APT 源下载 `.deb`,核对 SHA-256 后原样解包,再加上启动脚本、桌面文件和图标。
 
-针对主流 Linux 发行版（Fedora Silverblue/Atomic、Ubuntu、Debian、Arch Linux、openSUSE、SteamOS 等），本项目实现了：
-1. **官方源直通与校验**：直连 Anthropic 官方 APT/GCS 镜像源构建，自动提取 Debian 软件包并进行 SHA-256 完整性校验，构建产物纯净安全。
-2. **多架构原生兼容**：清单原生支持 `x86_64` (amd64) 与 `aarch64` (arm64) 架构。
-3. **MCP (Model Context Protocol) 互通**：支持配置外部 MCP Server，通过 Flatpak 的 `flatpak-spawn --host` 机制无缝调用宿主机工具。
-4. **Wayland 与 HiDPI 原生优化**：自适应 Wayland / X11 显示通道，分数缩放清晰锐利，支持自定义启动参数文件 `~/.config/claude-flags.conf`。
-5. **系统凭据与通知集成**：支持 GNOME Keyring 与 KDE KWallet 密钥环，保障登录状态持久保存。
-6. **一键安装与全自动更新**：配置专有 OSTree 仓库，GitHub Actions 每 6 小时监控 Anthropic 官方软件源，新版发布时自动构建增量镜像并发布。
+主要特性:
 
----
+- 安装包来自 Anthropic 官方 APT 源,清单中固定了下载地址和 SHA-256。
+- 启动脚本会检测 Wayland 并启用对应的 Ozone 参数,也支持用配置文件追加 Electron 参数。
+- 通过 `flatpak-spawn --host` 可以让 MCP Server 运行在宿主系统上。
+- 登录状态保存在 GNOME Keyring 或 KDE Wallet 中。
+- GitHub Actions 每 6 小时检查一次上游,发现新版本后自动更新清单、构建并发布。
 
-## 🚀 快速安装 (Quick Start)
+当前只构建和发布 **x86_64**。清单里保留了 aarch64 的下载源,但持续集成不会构建它,发布的软件源和离线包里也没有 aarch64 版本。
 
-### 方式 1：添加仓库一键安装（推荐，支持全自动日常更新）
+## 安装
 
-直接在终端执行以下命令：
+### 通过软件源安装(推荐)
 
 ```bash
-# 1. 添加 Claude 软件源仓库
 flatpak remote-add --if-not-exists claude https://jhuang6451.github.io/flatpak-claude-desktop/claude.flatpakrepo
-
-# 2. 安装 Claude Desktop
-flatpak install -y claude com.anthropic.Claude
-
-# 3. 运行应用
+flatpak install claude com.anthropic.Claude
 flatpak run com.anthropic.Claude
 ```
 
-安装完成后，可以在桌面启动器（GNOME、KDE Plasma 等）的应用列表中直接找到 **Claude** 点击运行。
+添加软件源后,`flatpak update` 会和其他应用一起更新 Claude。应用 Runtime 来自 Flathub,没有启用 Flathub 的系统需要先添加:
 
-### 方式 2：使用 `.flatpakref` 单文件图形化安装
+```bash
+flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+```
 
-1. 下载 [claude.flatpakref](https://jhuang6451.github.io/flatpak-claude-desktop/claude.flatpakref) 或在 [在线主页](https://jhuang6451.github.io/flatpak-claude-desktop/) 点击“一键安装”。
-2. 双击该文件，系统应用商店（GNOME Software 或 KDE Discover）将自动弹出并完成安装。
+### 通过 `.flatpakref` 安装
 
-### 方式 3：离线单文件 Bundle 安装
+下载 [claude.flatpakref](https://jhuang6451.github.io/flatpak-claude-desktop/claude.flatpakref),双击用 GNOME 软件或 KDE Discover 打开。这个文件带有 Flathub 的地址,Runtime 会一并安装。
 
-从 [GitHub Releases](https://github.com/jhuang6451/flatpak-claude-desktop/releases/latest) 下载 `com.anthropic.Claude.flatpak`，随后执行：
+### 通过离线包安装
+
+在 [Releases](https://github.com/jhuang6451/flatpak-claude-desktop/releases/latest) 下载 `com.anthropic.Claude.flatpak`:
 
 ```bash
 flatpak install --user com.anthropic.Claude.flatpak
 ```
 
----
+离线包不会自动更新,升级时需要重新下载。
 
-## 🔌 配置 MCP (Model Context Protocol)
+### 软件源未签名
 
-在 Flatpak 沙箱内，Claude Desktop 的配置文件位于：
-```bash
+软件源和 `.flatpakref` 都设置了 `gpg-verify=false`,提交没有 GPG 签名。传输依赖 HTTPS,但客户端无法在下载后验证提交来自本项目。如果这对你很重要,请自己从源码构建(见[本地构建](#本地构建))。签名支持仍在计划中。
+
+## 使用
+
+### 启动参数
+
+启动脚本读取下面两个文件之一,每行一个参数,空行和以 `#` 开头的行会被忽略。前者存在时不会读取后者。
+
+```text
+~/.var/app/com.anthropic.Claude/config/claude-flags.conf
+~/.var/app/com.anthropic.Claude/config/claude-desktop-flags.conf
+```
+
+路径在沙箱内对应 `$XDG_CONFIG_HOME`,所以不是 `~/.config`。例如强制使用 X11:
+
+```text
+--ozone-platform=x11
+```
+
+在 Wayland 会话中,启动脚本默认加上 `--ozone-platform-hint=auto` 和 `--enable-features=WaylandWindowDecorations`。如果你在配置文件里也写了 `--enable-features=...`,它会覆盖默认值,需要把 `WaylandWindowDecorations` 一并写进去。
+
+### 配置 MCP Server
+
+配置文件位置:
+
+```text
 ~/.var/app/com.anthropic.Claude/config/Claude/claude_desktop_config.json
 ```
 
-若需在 Claude 中调用宿主机的开发工具（如 `npx`、`uvx`、`node`、`python` 或 `docker`），可在配置中借助 `flatpak-spawn --host` 穿透至宿主系统：
+沙箱里没有 `npx`、`uvx`、`docker` 这些工具。需要用宿主系统上的程序时,用 `flatpak-spawn --host` 启动:
 
 ```json
 {
@@ -87,47 +110,71 @@ flatpak install --user com.anthropic.Claude.flatpak
         "@modelcontextprotocol/server-filesystem",
         "/path/to/allowed/directory"
       ]
-    },
-    "memory": {
-      "command": "flatpak-spawn",
-      "args": [
-        "--host",
-        "npx",
-        "-y",
-        "@modelcontextprotocol/server-memory"
-      ]
     }
   }
 }
 ```
 
----
+这个方式依赖下一节所说的 `org.freedesktop.Flatpak` 权限。
 
-## 🛠 本地构建与调试 (Local Build)
+## 权限与安全
 
-本项目支持完全在本地进行快速构建与测试：
+这个 Flatpak 的沙箱隔离很弱,请在安装前了解这一点。
+
+清单授予了 `--talk-name=org.freedesktop.Flatpak` 和 `--filesystem=home`。前者允许应用通过 `flatpak-spawn --host` 在宿主系统执行任意命令,后者允许读写整个用户目录。两项合起来,应用实际拥有当前用户的全部权限,沙箱起不到隔离作用。保留它们是为了支持宿主 MCP Server 和对任意项目目录的访问。
+
+完整权限如下:
+
+| 权限 | 用途 |
+| --- | --- |
+| `--socket=wayland`、`--socket=fallback-x11`、`--share=ipc` | 显示 |
+| `--share=network` | 访问 Claude 服务和 MCP Server |
+| `--socket=pulseaudio`、`--filesystem=xdg-run/pipewire-0` | 音频 |
+| `--device=dri` | GPU 加速 |
+| `--device=kvm` | Cowork 本地虚拟机 |
+| `--filesystem=home` | 读写用户目录 |
+| `--talk-name=org.freedesktop.Flatpak` | 在宿主系统运行命令 |
+| `--talk-name=org.freedesktop.Notifications`、`org.kde.StatusNotifierWatcher`、`com.canonical.AppMenu.Registrar` | 通知、托盘图标、全局菜单 |
+| `--talk-name=org.freedesktop.secrets`、`org.kde.kwalletd5`、`org.kde.kwalletd6` | 密钥环 |
+
+想收紧权限,可以用 [Flatseal](https://flathub.org/apps/com.github.tchx84.Flatseal) 或命令行撤销:
 
 ```bash
-# 1. 克隆代码仓库
+flatpak override --user --nofilesystem=home com.anthropic.Claude
+flatpak override --user --no-talk-name=org.freedesktop.Flatpak com.anthropic.Claude
+```
+
+撤销后,宿主 MCP Server 和对用户目录的访问都会失效。
+
+## 已知限制
+
+- **仅 x86_64。** 持续集成只构建 x86_64。
+- **GNOME 搜索提供器不可用。** 上游的搜索提供器依赖宿主系统的 `gjs`,沙箱内无法注册到 GNOME Shell。
+- **Claude in Chrome 不可用。** 它需要 Chrome 通过 native messaging 启动 `chrome-native-host`,而宿主上的浏览器看不到沙箱里的这个程序。
+- **Cowork 需要 KVM。** 它基于 QEMU 和 KVM。宿主没有 `/dev/kvm` 时,应用仍可使用,Cowork 的本地虚拟机无法启动。
+- **软件源没有签名。** 见上文。
+- **离线包的 Runtime 不会自动安装。** 安装前需要启用 Flathub。
+
+## 本地构建
+
+需要 `flatpak` 和 `flatpak-builder`(没有时脚本会安装 `org.flatpak.Builder`):
+
+```bash
 git clone https://github.com/jhuang6451/flatpak-claude-desktop.git
 cd flatpak-claude-desktop
-
-# 2. 运行本地一键构建脚本
 ./scripts/build-local.sh
 ```
 
----
+脚本会安装所需 Runtime,构建并把结果导出到本地 `repo/` 目录。
 
-## 🔄 自动化上游更新机制 (Auto-Updater)
+## 自动更新流程
 
-仓库配置了 `.github/workflows/check-update.yml` 定时任务（每 6 小时触发）：
-1. 运行 `scripts/update-checker.py` 抓取 Anthropic 官方 APT 仓库索引（`Packages.gz`）。
-2. 检测到新版本后，自动更新 `com.anthropic.Claude.yaml`（各架构包地址与哈希）和 AppStream 元数据 `com.anthropic.Claude.metainfo.xml`。
-3. 提交变动并触发 `build-and-deploy.yml` 自动化构建、发布 Release，并更新 GitHub Pages 上的 OSTree 软件源。
+1. `check-update.yml` 每 6 小时运行 `scripts/update-checker.py`,读取 Anthropic 的 `Packages.gz` 索引。
+2. 有新版本时,脚本更新 `com.anthropic.Claude.yaml` 里的下载地址和哈希,并在 `com.anthropic.Claude.metainfo.xml` 里添加版本记录,然后提交到 `master`。
+3. 提交触发 `build-and-deploy.yml`:构建 Flatpak,创建 GitHub Release,并通过 GitHub Pages 发布 OSTree 仓库和项目主页。
 
----
+每次发布都会从空仓库重新构建,软件源里只有最新一个提交。OSTree 按文件内容寻址,客户端更新时只下载本地没有的对象,但仓库不保存历史版本,也不提供从旧版本出发的增量包。
 
-## 📄 许可证说明 (License)
+## 许可证与商标
 
-* 本打包工程与脚本基于 [MIT 许可证](LICENSE) 开源。
-* Claude 与 Anthropic 均为 Anthropic PBC 的注册商标和专有软件。本项目为独立第三方社区开源项目，与 Anthropic 官方无隶属关系。
+本项目的打包脚本和配置以 [MIT 许可证](LICENSE)发布。Claude 是 Anthropic PBC 的商标,Claude Desktop 是 Anthropic 的专有软件,本项目与 Anthropic 没有隶属关系,也未获其背书。

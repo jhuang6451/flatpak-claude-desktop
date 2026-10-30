@@ -29,8 +29,6 @@ finish-args:
   - --device=dri
   - --device=kvm
   # Filesystem permissions
-  - --filesystem=xdg-download
-  - --filesystem=xdg-documents
   - --filesystem=home
   # Desktop Integration & Secret Services (Keyring / KWallet)
   - --talk-name=org.freedesktop.Notifications

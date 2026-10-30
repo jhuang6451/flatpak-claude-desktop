@@ -7,20 +7,22 @@
   <summary>Desktop application for Claude.ai</summary>
   <description>
     <p>
-      Talk with Claude, an AI assistant built by Anthropic. Claude can assist you with writing, analysis, coding, math, research, and creative projects.
+      Claude Desktop is the Linux desktop client for Claude, the AI assistant built by Anthropic. This is an unofficial Flatpak package of the official release.
     </p>
-    <p>Features include:</p>
+    <p>The app includes:</p>
     <ul>
-      <li>Direct access to Claude 3.7 Sonnet and Claude 3.5 models</li>
-      <li>Projects, Artifacts, and code execution capabilities</li>
-      <li>Extensible Model Context Protocol (MCP) server support</li>
-      <li>Integrated Claude Code and local sandbox environments</li>
+      <li>Chat with Claude, including projects and artifacts</li>
+      <li>Model Context Protocol (MCP) server support</li>
+      <li>Claude Code sessions and the Cowork local sandbox</li>
     </ul>
+    <p>The sandbox is permissive: the app can read your home folder and run commands on the host through flatpak-spawn. See the project page for details and known limitations.</p>
   </description>
   <launchable type="desktop-id">com.anthropic.Claude.desktop</launchable>
   <url type="homepage">https://claude.ai</url>
   <url type="help">https://support.anthropic.com</url>
-  <developer_name>Anthropic PBC</developer_name>
+  <developer id="com.anthropic">
+    <name>Anthropic PBC</name>
+  </developer>
   <content_rating type="oars-1.1" />
   <provides>
     <binary>claude</binary>

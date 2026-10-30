@@ -42,13 +42,13 @@
 
 ### 2.2 启动包装器 (`/app/bin/claude`)
 * 自动检测 Wayland / X11 显示环境，开启 `--ozone-platform-hint=auto` 与 `--enable-features=WaylandWindowDecorations`。
-* 支持用户在 `~/.config/claude-flags.conf` 中追加自定义 Electron 启动参数。
+* 支持用户在 `~/.var/app/com.anthropic.Claude/config/claude-flags.conf` 中追加自定义 Electron 启动参数。
 * 调用 `zypak-wrapper /app/lib/claude-desktop/claude-desktop` 启动主进程。
 
 ### 2.3 Model Context Protocol (MCP) 本地交互方案
 * 配置文件位置：`~/.var/app/com.anthropic.Claude/config/Claude/claude_desktop_config.json`
-* 权限配置：授予 `--talk-name=org.freedesktop.Flatpak` 与 `--filesystem=host`。
-* 跨沙箱调用：在 `claude_desktop_config.json` 中配置 `"command": "flatpak-spawn", "args": ["--host", ...]` 即可无缝调用宿主机环境中的 `npx`、`node`、`python` 或 `docker` 等外部 MCP Server。
+* 权限配置：授予 `--talk-name=org.freedesktop.Flatpak` 与 `--filesystem=home`（两项合起来等同于不受沙箱限制，已在 README 的“权限与安全”中说明）。
+* 跨沙箱调用：在 `claude_desktop_config.json` 中配置 `"command": "flatpak-spawn", "args": ["--host", ...]` 即可调用宿主机环境中的 `npx`、`node`、`python` 或 `docker` 等外部 MCP Server。
 
 ### 2.4 Cowork 本地代码执行沙箱
 * 架构：基于 QEMU + KVM + virtiofsd + 预编译根文件系统 (`smol-bin.x64.img`)。
@@ -61,11 +61,9 @@
 1. **构建与部署流水线 (`.github/workflows/build-and-deploy.yml`)**:
    * 代码推送至 `master` 时自动触发。
    * 基于 Flathub 官方 Action 容器完成沙箱构建。
-   * 自动生成 OSTree 增量静态 Delta。
+   * 每次从空仓库构建并生成 static delta（仅 from-scratch）；仓库只保留最新提交，不提供增量包。
    * 自动打 Tag 并发布 GitHub Release（包含离线 `.flatpak` bundle、`ostree-repo.tar.gz`、`.flatpakref`、`.flatpakrepo`）。
-   * 双模部署 GitHub Pages：
-     * `gh-pages` 分支：静态 Landing Page 与安装指引。
-     * Actions Pages API：完整托管 OSTree 软件源仓库（无 Git 100MB 单文件限制）。
+   * 通过 Actions Pages API 部署 GitHub Pages（Pages Source 为 GitHub Actions），同时托管静态主页与完整 OSTree 软件源，无 Git 100MB 单文件限制。
 2. **定时版本监控流水线 (`.github/workflows/check-update.yml`)**:
    * 每 6 小时自动执行 `scripts/update-checker.py`。
    * 发现 Anthropic 官方发布新版本时，自动修改清单与元数据，提交代码并级联触发构建与发布。
