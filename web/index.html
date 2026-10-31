@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
   <title>Claude Desktop for Linux (Flatpak)</title>
-  <meta name="description" content="Anthropic 官方 Linux 桌面客户端的 Flatpak 打包与软件源,从官方 APT 源构建,自动跟进上游版本。">
+  <meta name="description" content="Flatpak packaging and a software repository for Anthropic's official Linux desktop client, built from the official APT repository and kept in sync with upstream.">
   <link rel="icon" type="image/png" href="icons/com.anthropic.Claude.png">
   <link rel="stylesheet" href="style.css">
 </head>
@@ -17,11 +17,12 @@
         Claude Desktop Flatpak
       </a>
       <nav class="nav-links">
-        <a href="#install">安装</a>
+        <a href="#install">Install</a>
         <a href="#mcp" class="hide-sm">MCP</a>
-        <a href="#permissions">权限</a>
-        <a href="#limits" class="hide-sm">限制</a>
+        <a href="#permissions">Permissions</a>
+        <a href="#limits" class="hide-sm">Limitations</a>
         <a href="https://github.com/jhuang6451/flatpak-claude-desktop" rel="noopener">GitHub</a>
+        <a href="zh-CN.html" hreflang="zh-CN">中文</a>
       </nav>
     </div>
   </header>
@@ -29,61 +30,61 @@
   <main>
     <section class="hero">
       <div class="container">
-        <p class="eyebrow">非官方 Flatpak 打包</p>
-        <h1>在任何支持 Flatpak 的 Linux 上使用 Claude Desktop</h1>
-        <p class="lead">Anthropic 只提供 .deb 安装包。这个项目把它重新打成 Flatpak,放进一个自动更新的软件源,让 Fedora Atomic、Bazzite、SteamOS 等系统也能直接安装。</p>
+        <p class="eyebrow">Unofficial Flatpak package</p>
+        <h1>Claude Desktop on any Linux with Flatpak</h1>
+        <p class="lead">Anthropic ships only a .deb package. This project repackages it as a Flatpak and hosts it in an automatically updated repository, so Fedora Atomic, Bazzite, SteamOS, and similar systems can install it directly.</p>
         <div class="actions">
-          <a href="claude.flatpakref" class="btn btn-primary" download>下载 .flatpakref</a>
-          <a href="#install" class="btn btn-secondary">用命令行安装</a>
-          <a href="https://github.com/jhuang6451/flatpak-claude-desktop/releases/latest" class="btn btn-secondary" rel="noopener">离线包</a>
+          <a href="claude.flatpakref" class="btn btn-primary" download>Download .flatpakref</a>
+          <a href="#install" class="btn btn-secondary">Install from the command line</a>
+          <a href="https://github.com/jhuang6451/flatpak-claude-desktop/releases/latest" class="btn btn-secondary" rel="noopener">Offline bundle</a>
         </div>
-        <p class="note">目前仅提供 x86_64。本项目与 Anthropic 没有隶属关系。</p>
+        <p class="note">x86_64 only for now. This project is not affiliated with Anthropic.</p>
       </div>
     </section>
 
     <section id="install" class="block">
       <div class="container">
-        <h2>安装</h2>
-        <p>添加软件源后,Claude 会随 <code>flatpak update</code> 一起更新。</p>
+        <h2>Install</h2>
+        <p>Once the remote is added, Claude updates with <code>flatpak update</code>.</p>
 
         <div class="code-box">
           <div class="code-head">
             <span>shell</span>
-            <button class="copy-btn" type="button" id="copy-btn">复制</button>
+            <button class="copy-btn" type="button" id="copy-btn">Copy</button>
           </div>
           <pre><code id="cmd-text">flatpak remote-add --if-not-exists claude https://jhuang6451.github.io/flatpak-claude-desktop/claude.flatpakrepo
 flatpak install claude com.anthropic.Claude
 flatpak run com.anthropic.Claude</code></pre>
         </div>
 
-        <p>应用的 Runtime 来自 Flathub。如果系统还没有启用 Flathub,先执行 <code>flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo</code>。用 <code>.flatpakref</code> 安装时,Flathub 的地址已经包含在文件里。</p>
+        <p>The runtime comes from Flathub. If Flathub isn't enabled yet, run <code>flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo</code>first. Installing from the <code>.flatpakref</code> works without this step because the file includes the Flathub URL.</p>
 
         <div class="callout">
-          <p>软件源已用 GPG 签名,<code>.flatpakrepo</code> 和 <code>.flatpakref</code> 内嵌了公钥,Flatpak 会自动校验。签名密钥指纹:<code>6176 AE45 DD3A 94D2 5ACB D8BD 128B 2D5D 4D43 0E28</code>。如果你在启用签名之前添加过 <code>claude</code> 软件源,请先执行 <code>flatpak remote-delete claude</code> 再重新添加。</p>
+          <p>The repository is signed with GPG. <code>.flatpakrepo</code> and <code>.flatpakref</code> embed the public key, and Flatpak verifies signatures automatically. Key fingerprint: <code>6176 AE45 DD3A 94D2 5ACB D8BD 128B 2D5D 4D43 0E28</code>. If you added the <code>claude</code> remote before signing was enabled, run <code>flatpak remote-delete claude</code> and add it again.</p>
         </div>
       </div>
     </section>
 
     <section class="block">
       <div class="container">
-        <h2>打包内容</h2>
-        <p>程序本体与官方 .deb 一致。构建时从 Anthropic 的 APT 源下载,核对清单里记录的 SHA-256,再原样解包。</p>
+        <h2>What's in the package</h2>
+        <p>The program is identical to the official .deb. The build downloads it from Anthropic's APT repository, checks the SHA-256 recorded in the manifest, and unpacks it as is.</p>
         <div class="features">
           <div class="feature">
-            <h3>官方来源</h3>
-            <p>下载地址和哈希写在清单中,每次版本变化都会随提交更新,可以在仓库里逐条核对。</p>
+            <h3>Official source</h3>
+            <p>The download URL and hash are in the manifest and change with each version commit, so you can check them in the repository.</p>
           </div>
           <div class="feature">
-            <h3>自动跟进</h3>
-            <p>GitHub Actions 每 6 小时读取一次官方索引,发现新版本就更新清单、构建并发布。</p>
+            <h3>Automatic updates</h3>
+            <p>GitHub Actions reads the official index every 6 hours. When a new version appears, it updates the manifest, builds, and publishes.</p>
           </div>
           <div class="feature">
             <h3>Wayland</h3>
-            <p>在 Wayland 会话中自动启用 Ozone 和窗口装饰。可以通过配置文件追加 Electron 参数。</p>
+            <p>Wayland sessions get Ozone and window decorations automatically. A config file can add Electron flags.</p>
           </div>
           <div class="feature">
-            <h3>密钥环</h3>
-            <p>登录状态保存在 GNOME Keyring 或 KDE Wallet 中,重启后不需要重新登录。</p>
+            <h3>Keyring</h3>
+            <p>Login state is stored in GNOME Keyring or KDE Wallet, so you stay signed in across restarts.</p>
           </div>
         </div>
       </div>
@@ -91,8 +92,8 @@ flatpak run com.anthropic.Claude</code></pre>
 
     <section id="mcp" class="block">
       <div class="container">
-        <h2>使用宿主系统上的 MCP Server</h2>
-        <p>沙箱里没有 <code>npx</code>、<code>uvx</code> 或 <code>docker</code>。在 <code>~/.var/app/com.anthropic.Claude/config/Claude/claude_desktop_config.json</code> 里用 <code>flatpak-spawn --host</code> 启动宿主上的程序:</p>
+        <h2>MCP servers on the host</h2>
+        <p>The sandbox has no <code>npx</code>, <code>uvx</code>, or <code>docker</code>. In <code>~/.var/app/com.anthropic.Claude/config/Claude/claude_desktop_config.json</code>, start host programs with <code>flatpak-spawn --host</code>:</p>
         <div class="code-box">
           <div class="code-head"><span>json</span></div>
           <pre><code>{
@@ -113,26 +114,26 @@ flatpak run com.anthropic.Claude</code></pre>
 
     <section id="permissions" class="block">
       <div class="container">
-        <h2>权限</h2>
+        <h2>Permissions</h2>
         <div class="callout">
-          <p>这个 Flatpak 的沙箱隔离很弱。应用可以读写整个用户目录,还能通过 <code>flatpak-spawn --host</code> 在宿主系统运行任意命令,实际权限等同于当前用户。保留这两项是为了支持宿主 MCP Server 和任意项目目录。</p>
+          <p>This Flatpak has weak sandbox isolation. The app can read and write your whole home directory and run arbitrary commands on the host through <code>flatpak-spawn --host</code>, so it effectively has the current user's privileges. Both permissions stay to support host MCP servers and arbitrary project directories.</p>
         </div>
         <div class="table-wrap">
           <table>
             <thead>
-              <tr><th>权限</th><th>用途</th></tr>
+              <tr><th>Permission</th><th>Purpose</th></tr>
             </thead>
             <tbody>
-              <tr><td><code>--filesystem=home</code></td><td>读写用户目录</td></tr>
-              <tr><td><code>--talk-name=org.freedesktop.Flatpak</code></td><td>在宿主系统运行命令</td></tr>
-              <tr><td><code>--share=network</code></td><td>访问 Claude 服务和 MCP Server</td></tr>
-              <tr><td><code>--device=dri</code>、<code>--device=kvm</code></td><td>GPU 加速、Cowork 本地虚拟机</td></tr>
-              <tr><td>Wayland、X11、PulseAudio、PipeWire</td><td>显示与音频</td></tr>
-              <tr><td>通知、托盘、全局菜单、密钥环</td><td>桌面集成与登录状态保存</td></tr>
+              <tr><td><code>--filesystem=home</code></td><td>Read and write the home directory</td></tr>
+              <tr><td><code>--talk-name=org.freedesktop.Flatpak</code></td><td>Run commands on the host</td></tr>
+              <tr><td><code>--share=network</code></td><td>Claude services and MCP servers</td></tr>
+              <tr><td><code>--device=dri</code>、<code>--device=kvm</code></td><td>GPU acceleration, Cowork local virtual machine</td></tr>
+              <tr><td>Wayland, X11, PulseAudio, PipeWire</td><td>Display and audio</td></tr>
+              <tr><td>Notifications, tray, global menu, keyring</td><td>Desktop integration and login storage</td></tr>
             </tbody>
           </table>
         </div>
-        <p style="margin-top: 16px;">不需要宿主 MCP 时,可以用 Flatseal 或下面的命令撤销:</p>
+        <p style="margin-top: 16px;">If you don't need host MCP servers, revoke them with Flatseal or these commands:</p>
         <div class="code-box">
           <div class="code-head"><span>shell</span></div>
           <pre><code>flatpak override --user --nofilesystem=home com.anthropic.Claude
@@ -143,28 +144,28 @@ flatpak override --user --no-talk-name=org.freedesktop.Flatpak com.anthropic.Cla
 
     <section id="limits" class="block">
       <div class="container">
-        <h2>已知限制</h2>
+        <h2>Known limitations</h2>
         <ul class="plain">
-          <li><strong>仅 x86_64。</strong>清单保留了 aarch64 的下载源,但持续集成不构建它。</li>
-          <li><strong>GNOME 搜索提供器不可用。</strong>上游实现依赖宿主的 <code>gjs</code>,无法在沙箱内注册。</li>
-          <li><strong>Claude in Chrome 需要手动配置。</strong>运行仓库里的 <code>scripts/install-chrome-native-host.sh</code>,再重启应用和浏览器。Flatpak 版浏览器暂不支持。</li>
-          <li><strong>Cowork 需要 KVM。</strong>宿主没有 <code>/dev/kvm</code> 时,本地虚拟机无法启动,其余功能不受影响。</li>
+          <li><strong>x86_64 only.</strong> The manifest keeps an aarch64 download source, but CI doesn't build it.</li>
+          <li><strong>No GNOME search provider.</strong> The upstream implementation needs <code>gjs</code> on the host and can't register from inside the sandbox.</li>
+          <li><strong>Claude in Chrome needs manual setup.</strong> Run <code>scripts/install-chrome-native-host.sh</code> from the repository, then restart the app and the browser. Flatpak builds of browsers aren't supported yet.</li>
+          <li><strong>Cowork needs KVM.</strong> Without <code>/dev/kvm</code> on the host, the local virtual machine can't start. Everything else works.</li>
         </ul>
       </div>
     </section>
 
     <section class="block">
       <div class="container">
-        <h2>更新方式</h2>
-        <p>每次发布都会从空仓库重新构建,软件源里只保留最新提交。OSTree 按文件内容寻址,客户端只下载本地没有的对象,但不提供从旧版本出发的增量包。</p>
+        <h2>How updates work</h2>
+        <p>Each release is built from an empty repository, so the remote keeps only the latest commit. OSTree addresses files by content and clients download only the objects they lack, but there are no deltas from older versions.</p>
       </div>
     </section>
   </main>
 
   <footer class="footer">
     <div class="container">
-      <p>Claude 是 Anthropic PBC 的商标,Claude Desktop 是 Anthropic 的专有软件。这是独立的社区项目,与 Anthropic 没有隶属关系,也未获其背书。</p>
-      <p>打包脚本以 MIT 许可证发布 · <a href="https://github.com/jhuang6451/flatpak-claude-desktop" rel="noopener">源码</a></p>
+      <p>Claude is a trademark of Anthropic PBC, and Claude Desktop is Anthropic's proprietary software. This is an independent community project, not affiliated with or endorsed by Anthropic.</p>
+      <p>Packaging scripts are released under the MIT License · <a href="https://github.com/jhuang6451/flatpak-claude-desktop" rel="noopener">Source</a></p>
     </div>
   </footer>
 
@@ -175,8 +176,8 @@ flatpak override --user --no-talk-name=org.freedesktop.Flatpak com.anthropic.Cla
       if (!btn || !code || !navigator.clipboard) return;
       btn.addEventListener('click', function () {
         navigator.clipboard.writeText(code.innerText).then(function () {
-          btn.textContent = '已复制';
-          setTimeout(function () { btn.textContent = '复制'; }, 2000);
+          btn.textContent = 'Copied';
+          setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
         });
       });
     })();
