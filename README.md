@@ -65,9 +65,22 @@ flatpak install --user com.anthropic.Claude.flatpak
 
 离线包不会自动更新,升级时需要重新下载。
 
-### 软件源未签名
+### 软件源签名
 
-软件源和 `.flatpakref` 都设置了 `gpg-verify=false`,提交没有 GPG 签名。传输依赖 HTTPS,但客户端无法在下载后验证提交来自本项目。如果这对你很重要,请自己从源码构建(见[本地构建](#本地构建))。签名支持仍在计划中。
+软件源的提交和 summary 都用 GPG 签名,`claude.flatpakrepo` 和 `claude.flatpakref` 内嵌了公钥并启用了 `gpg-verify=true`,Flatpak 会在下载后校验。签名密钥指纹:
+
+```text
+6176 AE45 DD3A 94D2 5ACB D8BD 128B 2D5D 4D43 0E28
+```
+
+如果你在签名启用之前就添加过 `claude` 软件源,旧配置没有公钥,更新会失败。删除后重新添加即可:
+
+```bash
+flatpak remote-delete claude
+flatpak remote-add claude https://jhuang6451.github.io/flatpak-claude-desktop/claude.flatpakrepo
+```
+
+离线包 `com.anthropic.Claude.flatpak` 不走这套校验,请从本仓库的 Releases 页面下载。
 
 ## 使用
 
@@ -86,7 +99,7 @@ flatpak install --user com.anthropic.Claude.flatpak
 --ozone-platform=x11
 ```
 
-在 Wayland 会话中,启动脚本默认加上 `--ozone-platform-hint=auto` 和 `--enable-features=WaylandWindowDecorations`。如果你在配置文件里也写了 `--enable-features=...`,它会覆盖默认值,需要把 `WaylandWindowDecorations` 一并写进去。
+在 Wayland 会话中,启动脚本默认加上 `--ozone-platform-hint=auto` 和 `--enable-features=WaylandWindowDecorations`。如果你在配置文件里也写了 `--enable-features=...`,启动脚本会把它和默认值合并,不需要重复写 `WaylandWindowDecorations`。
 
 ### 配置 MCP Server
 
@@ -152,7 +165,6 @@ flatpak override --user --no-talk-name=org.freedesktop.Flatpak com.anthropic.Cla
 - **GNOME 搜索提供器不可用。** 上游的搜索提供器依赖宿主系统的 `gjs`,沙箱内无法注册到 GNOME Shell。
 - **Claude in Chrome 需要手动配置。** 它需要宿主浏览器通过 native messaging 启动沙箱里的 `chrome-native-host`。安装后运行一次 `scripts/install-chrome-native-host.sh`,再重启 Claude Desktop 和浏览器。该脚本会在 `~/.local/bin` 放一个包装脚本,并向宿主上的 Chrome、Chromium、Brave、Edge、Vivaldi 注册清单。Flatpak 版浏览器暂不支持。
 - **Cowork 需要 KVM。** 它基于 QEMU 和 KVM。宿主没有 `/dev/kvm` 时,应用仍可使用,Cowork 的本地虚拟机无法启动。
-- **软件源没有签名。** 见上文。
 - **离线包的 Runtime 不会自动安装。** 安装前需要启用 Flathub。
 
 ## 本地构建

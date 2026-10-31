@@ -11,6 +11,9 @@ on:
       - 'com.anthropic.Claude.metainfo.xml'
       - 'scripts/**'
       - 'icons/**'
+      - 'web/**'
+      - 'claude.flatpakref'
+      - 'claude.flatpakrepo'
       - '.github/workflows/build-and-deploy.yml'
   workflow_dispatch:
 
@@ -18,6 +21,11 @@ permissions:
   contents: write
   pages: write
   id-token: write
+
+# 同一时间只部署一次；排队中的运行只保留最新一个，避免旧版本后部署覆盖新版本
+concurrency:
+  group: build-and-deploy
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -51,15 +59,6 @@ jobs:
             org.freedesktop.Sdk//25.08 \
             org.electronjs.Electron2.BaseApp//25.08 || true
 
-      - name: Cache Flatpak Builder State
-        uses: actions/cache@v4
-        with:
-          path: |
-            .flatpak-builder
-          key: flatpak-builder-${{ runner.os }}-${{ hashFiles('com.anthropic.Claude.yaml') }}
-          restore-keys: |
-            flatpak-builder-${{ runner.os }}-
-
       - name: Build Flatpak Package & OSTree Repo
         uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
@@ -71,9 +70,23 @@ jobs:
           cache: true
           arch: x86_64
 
-      - name: Generate OSTree Static Deltas & Prune
+      - name: Import GPG signing key
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
         run: |
-          flatpak build-update-repo --generate-static-deltas --prune repo
+          if [ -z "$GPG_PRIVATE_KEY" ] || [ -z "$GPG_KEY_ID" ]; then
+            echo "::error::Secrets GPG_PRIVATE_KEY / GPG_KEY_ID are required to sign the repository"
+            exit 1
+          fi
+          printf '%s\n' "$GPG_PRIVATE_KEY" | gpg --batch --import
+          gpg --list-secret-keys --keyid-format LONG "$GPG_KEY_ID"
+
+      - name: Sign Repository, Generate Static Deltas & Prune
+        env:
+          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+        run: |
+          scripts/sign-repo.sh repo "$GPG_KEY_ID" --prune
           tar -czf ostree-repo.tar.gz -C repo .
 
       - name: Upload Standalone Bundle
@@ -116,6 +129,14 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ostree-repo-archive
+
+      - name: Move release tag to the built commit
+        run: |
+          # 同版本重新打包时 softprops/action-gh-release 不会移动已有 tag
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -f "v${APP_VERSION}" "${GITHUB_SHA}"
+          git push -f origin "refs/tags/v${APP_VERSION}"
 
       - name: Create or Update GitHub Release
         uses: softprops/action-gh-release@v2

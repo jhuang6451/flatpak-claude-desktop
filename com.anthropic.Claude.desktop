@@ -9,14 +9,14 @@ Type=Application
 StartupNotify=true
 StartupWMClass=com.anthropic.Claude
 SingleMainWindow=true
-Categories=Utility;Development;
+Categories=Utility;
 MimeType=x-scheme-handler/claude;application/vnd.anthropic.mcpb;application/vnd.anthropic.skill;
 Actions=NewChat;NewCode;
 
 [Desktop Action NewChat]
 Name=New Chat
-Exec=claude "claude://claude.ai/new?surface=chat&source=desktop_action"
+Exec=claude --action=new-chat
 
 [Desktop Action NewCode]
 Name=New Claude Code Session
-Exec=claude "claude://code/new?source=desktop_action"
+Exec=claude --action=new-code

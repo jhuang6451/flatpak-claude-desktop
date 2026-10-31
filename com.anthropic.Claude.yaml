@@ -40,7 +40,6 @@ finish-args:
   - --talk-name=com.canonical.AppMenu.Registrar
   - --talk-name=com.canonical.AppMenu.Registrar.*
   # Environment
-  - --env=OZONE_PLATFORM=wayland
   - --env=ELECTRON_TRASH=gio
 
 modules:

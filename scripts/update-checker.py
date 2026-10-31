@@ -11,6 +11,7 @@ import os
 import re
 import sys
 import gzip
+import email.utils
 import argparse
 import datetime
 import subprocess
@@ -33,6 +34,29 @@ def fetch_url(url, timeout=30):
     return res.stdout
 
 
+def version_key(version):
+    """Sort key for Debian-style versions: compare runs of digits numerically."""
+    return [(0, int(p)) if p.isdigit() else (1, p) for p in re.findall(r"\d+|[A-Za-z]+", version)]
+
+
+def fetch_release_date(deb_filename):
+    """Upstream publish date from the .deb's Last-Modified header; today if unavailable."""
+    url = f"{REPO_BASE_URL}/{deb_filename}"
+    try:
+        res = subprocess.run(
+            ["curl", "-sSLI", "--fail", "--connect-timeout", "15", "-m", "30", url],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        )
+        if res.returncode == 0:
+            for line in res.stdout.decode("utf-8", errors="ignore").splitlines():
+                if line.lower().startswith("last-modified:"):
+                    parsed = email.utils.parsedate_to_datetime(line.split(":", 1)[1].strip())
+                    return parsed.date().isoformat()
+    except Exception as e:
+        print(f"Warning: could not determine upstream release date: {e}")
+    return datetime.date.today().isoformat()
+
+
 def parse_latest_package(packages_gz_data):
     raw_text = gzip.decompress(packages_gz_data).decode("utf-8", errors="ignore")
     entries = raw_text.strip().split("\n\n")
@@ -44,7 +68,8 @@ def parse_latest_package(packages_gz_data):
                 k, v = line.split(":", 1)
                 pkg[k.strip()] = v.strip()
         if pkg.get("Package") == "claude-desktop":
-            latest = pkg
+            if not latest or version_key(pkg.get("Version", "")) > version_key(latest.get("Version", "")):
+                latest = pkg
     return latest
 
 
@@ -190,9 +215,9 @@ def main():
             })
         return 0
 
-    today = datetime.date.today().isoformat()
+    release_date = fetch_release_date(amd64_pkg.get("Filename", ""))
     update_manifest(curr["content"], ver, amd64_sha, arm64_sha)
-    update_metainfo(ver, today)
+    update_metainfo(ver, release_date)
 
     if args.ci:
         set_github_output({

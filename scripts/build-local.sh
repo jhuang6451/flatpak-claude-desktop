@@ -32,7 +32,8 @@ echo "==> Updating repository index & generating static deltas..."
 flatpak build-update-repo --generate-static-deltas "${REPO_DIR}"
 
 echo "==> Building standalone bundle..."
-flatpak build-bundle "${REPO_DIR}" com.anthropic.Claude.flatpak com.anthropic.Claude stable
+flatpak build-bundle --runtime-repo=https://dl.flathub.org/repo/flathub.flatpakrepo \
+  "${REPO_DIR}" com.anthropic.Claude.flatpak com.anthropic.Claude stable
 
 echo "==> Done! You can install and test your local build with:"
 echo "    flatpak install --user --bundle com.anthropic.Claude.flatpak"

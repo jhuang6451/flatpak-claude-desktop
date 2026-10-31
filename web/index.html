@@ -59,7 +59,7 @@ flatpak run com.anthropic.Claude</code></pre>
         <p>应用的 Runtime 来自 Flathub。如果系统还没有启用 Flathub,先执行 <code>flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo</code>。用 <code>.flatpakref</code> 安装时,Flathub 的地址已经包含在文件里。</p>
 
         <div class="callout">
-          <p>软件源没有 GPG 签名(<code>gpg-verify=false</code>)。传输走 HTTPS,但客户端无法验证提交确实来自本项目。需要验证时,请从源码自行构建。</p>
+          <p>软件源已用 GPG 签名,<code>.flatpakrepo</code> 和 <code>.flatpakref</code> 内嵌了公钥,Flatpak 会自动校验。签名密钥指纹:<code>6176 AE45 DD3A 94D2 5ACB D8BD 128B 2D5D 4D43 0E28</code>。如果你在启用签名之前添加过 <code>claude</code> 软件源,请先执行 <code>flatpak remote-delete claude</code> 再重新添加。</p>
         </div>
       </div>
     </section>
@@ -149,7 +149,6 @@ flatpak override --user --no-talk-name=org.freedesktop.Flatpak com.anthropic.Cla
           <li><strong>GNOME 搜索提供器不可用。</strong>上游实现依赖宿主的 <code>gjs</code>,无法在沙箱内注册。</li>
           <li><strong>Claude in Chrome 需要手动配置。</strong>运行仓库里的 <code>scripts/install-chrome-native-host.sh</code>,再重启应用和浏览器。Flatpak 版浏览器暂不支持。</li>
           <li><strong>Cowork 需要 KVM。</strong>宿主没有 <code>/dev/kvm</code> 时,本地虚拟机无法启动,其余功能不受影响。</li>
-          <li><strong>软件源没有签名。</strong>见上文安装一节。</li>
         </ul>
       </div>
     </section>
