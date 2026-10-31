@@ -9,15 +9,15 @@ HOST_NAME=com.anthropic.claude_browser_extension
 BIN_DIR="${XDG_BIN_HOME:-$HOME/.local/bin}"
 WRAPPER="$BIN_DIR/claude-chrome-native-host"
 CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}"
-CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}"
 
 mkdir -p "$BIN_DIR"
 cat > "$WRAPPER" <<WRAP
 #!/bin/sh
 # Run chrome-native-host inside the Claude Flatpak. /tmp is private per sandbox,
-# so link the bridge socket dir to the shared one that claude.sh also uses.
+# so link the bridge socket dir to the same one claude.sh uses (the sandbox's
+# XDG_CACHE_HOME, i.e. ~/.var/app/$APP_ID/cache).
 exec flatpak run --command=sh $APP_ID -c '
-d="$CACHE_DIR/claude-mcp-browser-bridge"
+d="\$XDG_CACHE_HOME/claude-mcp-browser-bridge"
 mkdir -p "\$d" && chmod 700 "\$d"
 ln -sfn "\$d" "/tmp/claude-mcp-browser-bridge-\$(id -un)"
 exec /app/lib/claude-desktop/resources/chrome-native-host "\$@"' sh "\$@"
