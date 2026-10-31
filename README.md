@@ -150,7 +150,7 @@ flatpak override --user --no-talk-name=org.freedesktop.Flatpak com.anthropic.Cla
 
 - **仅 x86_64。** 持续集成只构建 x86_64。
 - **GNOME 搜索提供器不可用。** 上游的搜索提供器依赖宿主系统的 `gjs`,沙箱内无法注册到 GNOME Shell。
-- **Claude in Chrome 不可用。** 它需要 Chrome 通过 native messaging 启动 `chrome-native-host`,而宿主上的浏览器看不到沙箱里的这个程序。
+- **Claude in Chrome 需要手动配置。** 它需要宿主浏览器通过 native messaging 启动沙箱里的 `chrome-native-host`。安装后运行一次 `scripts/install-chrome-native-host.sh`,再重启 Claude Desktop 和浏览器。该脚本会在 `~/.local/bin` 放一个包装脚本,并向宿主上的 Chrome、Chromium、Brave、Edge、Vivaldi 注册清单。Flatpak 版浏览器暂不支持。
 - **Cowork 需要 KVM。** 它基于 QEMU 和 KVM。宿主没有 `/dev/kvm` 时,应用仍可使用,Cowork 的本地虚拟机无法启动。
 - **软件源没有签名。** 见上文。
 - **离线包的 Runtime 不会自动安装。** 安装前需要启用 Flathub。

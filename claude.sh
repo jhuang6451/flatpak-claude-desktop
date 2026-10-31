@@ -24,5 +24,11 @@ fi
 # Set temporary directory
 export TMPDIR="${XDG_CACHE_HOME:-$HOME/.cache}"
 
+# chrome-native-host (spawned by the host browser, see scripts/install-chrome-native-host.sh)
+# creates its socket in /tmp, which is private per sandbox. Point it at a shared dir.
+BRIDGE_DIR="$TMPDIR/claude-mcp-browser-bridge"
+mkdir -p "$BRIDGE_DIR" && chmod 700 "$BRIDGE_DIR"
+ln -sfn "$BRIDGE_DIR" "/tmp/claude-mcp-browser-bridge-$(id -un)"
+
 # Execute using zypak-wrapper (from org.electronjs.Electron2.BaseApp)
 exec zypak-wrapper /app/lib/claude-desktop/claude-desktop "${FLAGS[@]}" "$@"

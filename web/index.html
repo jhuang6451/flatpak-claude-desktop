@@ -147,7 +147,7 @@ flatpak override --user --no-talk-name=org.freedesktop.Flatpak com.anthropic.Cla
         <ul class="plain">
           <li><strong>仅 x86_64。</strong>清单保留了 aarch64 的下载源,但持续集成不构建它。</li>
           <li><strong>GNOME 搜索提供器不可用。</strong>上游实现依赖宿主的 <code>gjs</code>,无法在沙箱内注册。</li>
-          <li><strong>Claude in Chrome 不可用。</strong>浏览器看不到沙箱里的 <code>chrome-native-host</code>。</li>
+          <li><strong>Claude in Chrome 需要手动配置。</strong>运行仓库里的 <code>scripts/install-chrome-native-host.sh</code>,再重启应用和浏览器。Flatpak 版浏览器暂不支持。</li>
           <li><strong>Cowork 需要 KVM。</strong>宿主没有 <code>/dev/kvm</code> 时,本地虚拟机无法启动,其余功能不受影响。</li>
           <li><strong>软件源没有签名。</strong>见上文安装一节。</li>
         </ul>
