@@ -28,6 +28,11 @@
     <binary>claude</binary>
   </provides>
   <releases>
+    <release version="5.11492.2" date="2026-11-13">
+      <description>
+        <p>Anthropic Claude Desktop Linux release 5.11492.2.</p>
+      </description>
+    </release>
     <release version="5.11492.0" date="2026-11-12">
       <description>
         <p>Anthropic Claude Desktop Linux release 5.11492.0.</p>

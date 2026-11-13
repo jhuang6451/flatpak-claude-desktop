@@ -95,15 +95,15 @@ modules:
 
     sources:
       - type: file
-        url: https://downloads.claude.ai/claude-desktop/apt/stable/pool/main/c/claude-desktop/claude-desktop_5.11492.0_amd64.deb
-        sha256: 9c5cf5d4c8b2356779a3dde7dedfe1c301a7223971597198213d815fe8ccfa55
+        url: https://downloads.claude.ai/claude-desktop/apt/stable/pool/main/c/claude-desktop/claude-desktop_5.11492.2_amd64.deb
+        sha256: d10944fa5663b997400cf66c5c7738fd6acf654f8aaeaca5b994eb147aa6b35f
         dest-filename: claude.deb
         only-arches:
           - x86_64
 
       - type: file
-        url: https://downloads.claude.ai/claude-desktop/apt/stable/pool/main/c/claude-desktop/claude-desktop_5.11492.0_arm64.deb
-        sha256: 0705809bfc8c72877aab551cca99b2ff8632849897f47144096c6f18ad3848cf
+        url: https://downloads.claude.ai/claude-desktop/apt/stable/pool/main/c/claude-desktop/claude-desktop_5.11492.2_arm64.deb
+        sha256: 208b637e951f53d4621d6edc1598c21bda664602ed409ad37b6735021be9840e
         dest-filename: claude.deb
         only-arches:
           - aarch64
